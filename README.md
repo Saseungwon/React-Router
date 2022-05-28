@@ -1,70 +1,150 @@
-# Getting Started with Create React App
+## React Router
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+#### SPA 라우팅 과정 (Single Page Application)
 
-## Available Scripts
+1. 브라우저에서 최초에 / 경로로 요청을 하면
+2. React Web App을 내려준다.
+3. 내려받은 React App에서 / 경로에 맞는 컴포넌트를 보여준다.
+4. React App에서 다른 페이지로 이동하는 동작을 수행하면
+5. 새로운 경로에 맞는 컴포넌트를 보여준다.
 
-In the project directory, you can run:
+- 설치
 
-### `npm start`
+  ```bash
+  npm i react-router-dom
+  ```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- cra에 기본 내장된 패키지 아니다.
+- react-router-dom은 facebook의 공식 패키지는 아니다.
+- 가장 대표적인 라우팅 패키지
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+App.js
 
-### `npm test`
+```js
+function App() {
+  // Route 컴포넌트에 path와 컴포넌트를 설정하여 나열해준다.
+  // BrowserRouter로 Route 들을 감싸준다.
+  // 브라우저에서 요청한 경로에 Route의 Path가 들어있으면 해당 component를 보여준다.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  // exact를 추가적으로 사용해서 완전히 똑같은 path와 url이어야 매칭되게 해줌
+  return (
+    <BrowserRouter>
+      <Route path="/" exact component={Home} />
+      <Route path="/profile" exact component={Profile} />
+      <Route path="/profile/:id" component={Profile} />
+      <Route path="/about" component={About} />
+    </BrowserRouter>
+  );
+}
+```
 
-### `npm run build`
+Home.jsx
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```jsx
+export default function Home() {
+  return <div>Home 페이지 입니다.</div>;
+}
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#### Dynamic Routing1 (동적 라우팅)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- 주소창에 profile 뒤 id를 받아서 사용 가능
 
-### `npm run eject`
+App.js
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```js
+function App() {
+  return (
+    <BrowserRouter>
+      <Route path="/" exact component={Home} />
+      <Route path="/profile" exact component={Profile} />
+      // 이렇게 :id 같이 받아서 사용할 수 있다.
+      <Route path="/profile/:id" component={Profile} />
+    </BrowserRouter>
+  );
+}
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Profile.jsx
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```jsx
+export default function Profile(props) {
+  const id = props.match.params.id;
+  console.log(id, typeof id);
+  return (
+    <div>
+      <h2>Profile 페이지 입니다.</h2>
+      {id && <p>id 는 {id}입니다.</p>}
+      {/* id가 있으면? 출력 */}
+    </div>
+  );
+}
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+#### Dynamic Routing1 (동적 라우팅)
 
-## Learn More
+localhost:3000/about?name=mark
+위 url에서 name이 mark 인 것을 가져오기
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- 방법 1 : URLSearchParams 사용
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+  ```jsx
+  export default function About(props) {
+    // localhost:3000/about?name=mark
+    // 위 url에서 name이 mark 인 것을 가져오기
+    console.log(props);
+    /*
+    props :
+    {history: {…}, location: {…}, match: {…}, staticContext: undefined}
+    history: {length: 8, action: 'POP', location: {…}, createHref: ƒ, push: ƒ, …}
+    location: {pathname: '/about', search: '?name=mark', hash: '', state: undefined}
+    match: {path: '/about', url: '/about', isExact: true, params: {…}}
+    */
+    const searchParams = props.location.search;
+    console.log(searchParams);
+    // URLSearchParams는 내장객체라 그냥 쓰면 됨
+    const obj = new URLSearchParams(searchParams);
+    console.log(obj); //          |?name=mark
+    // .get으로 "프로퍼티" 이름으로 그냥 사용하면 됨
+    console.log(obj.get("name")); // mark
 
-### Code Splitting
+    return <div>About 페이지 입니다.</div>;
+  }
+  ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- 방법2 : queryString import해서 사용
 
-### Analyzing the Bundle Size
+  ```jsx
+  // 방법2 : queryString 사용
+  const query = queryString.parse(searchParams);
+  console.log(query);
+  return (
+    <div>
+      <h2>About 페이지 입니다.</h2>
+      {query.name && <p>name 은 {query.name} 입니다.</p>}
+    </div>
+  );
+  ```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+#### Switch와 NotFound
 
-### Making a Progressive Web App
+React Route에서 제공하는 Swicth 컴포넌트를 이용해 NotFound를 처리하는 방법
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- 여러 Route 중 순서대로 먼저 맞는 하나만 보여준다.
+- exact를 뺄 수 있는 로직을 만들 수 있다.
+- 가장 마지막에 어디 path에도 맞지 않으면 보여지는 컴포넌트를 설정해서, Not Found 페이지를 만들 수 있다.
 
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```js
+<BrowserRouter>
+  {/* Switch 사용해 url 맞는 게 없으면 not found로, 가장 넓은 경로를 맨 밑으로 -> 루트경로는 맨밑 */}
+  <Switch>
+    {/* id 받아서 사용가능 */}
+    <Route path="/profile/:id" component={Profile} />
+    <Route path="/profile" component={Profile} />
+    <Route path="/about" component={About} />
+    <Route path="/" exact component={Home} />
+    {/* 다 찾지 못했을 때 여기로 */}
+    <Route component={NotFound} />
+  </Switch>
+</BrowserRouter>
+```
