@@ -138,7 +138,6 @@ React Route에서 제공하는 Swicth 컴포넌트를 이용해 NotFound를 처�
 <BrowserRouter>
   {/* Switch 사용해 url 맞는 게 없으면 not found로, 가장 넓은 경로를 맨 밑으로 -> 루트경로는 맨밑 */}
   <Switch>
-    {/* id 받아서 사용가능 */}
     <Route path="/profile/:id" component={Profile} />
     <Route path="/profile" component={Profile} />
     <Route path="/about" component={About} />
@@ -147,4 +146,169 @@ React Route에서 제공하는 Swicth 컴포넌트를 이용해 NotFound를 처�
     <Route component={NotFound} />
   </Switch>
 </BrowserRouter>
+```
+
+#### JSX 링크로 라우팅 이동하기
+
+1. Link로 하는 방법
+   Link 라고 하는 react-router-dom으로 라우팅 이동 가능
+   a태그를 사용하지는 않았지만 실제로 돌아갈 때는 a태그로 들어간다.
+   서버에서 이동하는 게 아니라 클라이언트 사이드에서만 뷰를 전환할 수 있도록 해줘서 속도가 빠르다.
+
+- Links.jsx
+
+```jsx
+// react-router-dom 에서 import 해서 사용
+import { Link } from "react-router-dom";
+
+export default function Links() {
+  return (
+    <ul>
+      <li>
+        <Link to="/">Home</Link>
+      </li>
+      <li>
+        <Link to="/profile">Profile</Link>
+      </li>
+      <li>
+        <Link to="/profile/1">Profile/1</Link>
+      </li>
+      <li>
+        <Link to="/about">About</Link>
+      </li>
+      <li>
+        <Link to="/about?name=mark">About?name=mark</Link>
+      </li>
+    </ul>
+  );
+}
+```
+
+- App.js
+
+```js
+<BrowserRouter>
+  {/* a 태그가 아니라 Link to로 화면 이동하기... 로딩표시 X 새로운 파일다운 X, 페이지 이동 더 효율적으로 가능 */}
+  {/* Links.jsx를 가져와서 랜더링만 해주면 됨 */}
+  <Links />
+  <Switch>
+    <Route path="/profile/:id" component={Profile} />
+    <Route path="/profile" component={Profile} />
+    <Route path="/about" component={About} />
+    <Route component={NotFound} />
+  </Switch>
+</BrowserRouter>
+```
+
+2. navigation Link로 하는 방법
+
+import {NavLink} from 'react-router-dom';
+activeClassName, activeStyle 처럼 active 상태에 대한 스타일 지정 가능
+Route의 path처럼 동작하기 때문에 exact가 있다.
+
+- NavLinks.jsx
+
+```jsx
+export default function NavLinks() {
+  return (
+    <ul>
+      <li>
+        <NavLink to="/" exact activeStyle={activeStyle}>
+          Home
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/profile" exact activeStyle={activeStyle}>
+          Profile
+        </NavLink>
+      </li>
+      <li>
+        <NavLink to="/profile/1" activeStyle={activeStyle}>
+          Profile/1
+        </NavLink>
+      </li>
+      <li>
+        <NavLink
+          to="/about"
+          activeStyle={activeStyle}
+          isActive={(match, location) => {
+            console.log(match, location);
+            return match !== null && location.search === "";
+          }}
+        >
+          About
+        </NavLink>
+      </li>
+      <li>
+        <NavLink
+          to="/about?name=mark"
+          activeStyle={activeStyle}
+          isActive={(match, location) => {
+            return location.search === "?name=mark";
+          }}
+        >
+          About?name=mark
+        </NavLink>
+      </li>
+    </ul>
+  );
+}
+```
+
+- App.js
+
+```js
+<BrowserRouter>
+  <Links />
+  // Navlinks 랜더링
+  <NavLinks />
+  <Switch>
+    <Route path="/profile/:id" component={Profile} />
+    <Route path="/profile" component={Profile} />
+    <Route path="/about" component={About} />
+    <Route path="/" exact component={Home} />
+    <Route component={NotFound} />
+  </Switch>
+</BrowserRouter>
+```
+
+#### JS로 라우팅 이동하기
+
+react-router-dom에서 제공하는 withRouter 컴포넌트를 사용해서 하위 route에서 사용할 props를 담아줄 수 있다.
+
+- LoginButton.jsx
+
+```jsx
+// withRouter를 사용하면 route에서 연결된 props를 다 넣어준다.
+import { withRouter } from "react-router-dom";
+
+// withRouter에 function을 넣어서 사용
+export default withRouter(function LoginButton(props) {
+  console.log(props);
+  function login() {
+    setTimeout(() => {
+      props.history.push("/");
+    }, 1000);
+  }
+  return <button onClick={login}>로그인하기</button>;
+});
+```
+
+#### Redirect 컴포넌트
+
+- <Redirect />
+  to로 지정된 경로로 Redirect 됨
+
+```jsx
+import { Redirect } from "react-router-dom";
+
+//jsx
+<Redirect to="/" />;
+```
+
+```js
+<Route
+  path="/login"
+  render={() => (isLogin ? <Redirect to="/" /> : <Login />)}
+/>
 ```
