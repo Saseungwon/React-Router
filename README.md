@@ -312,3 +312,7 @@ import { Redirect } from "react-router-dom";
   render={() => (isLogin ? <Redirect to="/" /> : <Login />)}
 />
 ```
+
+<br>
+
+#### React Router Hook
