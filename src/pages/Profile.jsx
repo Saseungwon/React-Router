@@ -1,5 +1,8 @@
-export default function Profile(props) {
-  const id = props.match.params.id;
+import { useParams } from "react-router-dom";
+
+export default function Profile() {
+  const params = useParams();
+  const id = params.id;
   console.log(id, typeof id);
   return (
     <div>
